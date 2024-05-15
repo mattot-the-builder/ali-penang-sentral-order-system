@@ -1,5 +1,7 @@
 def main():
-    print("Penang Sentral Ordering System")
+    print("starting application...\n")
+
+    print("\nPenang Sentral Ordering System\n")
 
 
 if __name__ == "__main__":
