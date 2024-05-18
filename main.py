@@ -16,19 +16,19 @@ class App:
 
     def print_main_menu(self):
         print("""
--\033[1;37m-------------------------------------------------
-        \033[32mPenang Sentral Ordering System\033[0m
+--------------------------------------------------
+        Penang Sentral Ordering System
 --------------------------------------------------
 
-        \033[1;36m1.\033[0m \033[1;36mInsert Order
-        \033[1;35m2.\033[0m \033[1;35mSearch Order
-        \033[1;33m3.\033[0m \033[1;33mUpdate Order
-        \033[1;34m4.\033[0m \033[1;34mDelete Order
-        \033[1;37m5.\033[0m \033[1;37mGenerate Report
-        \033[1;31m6.\033[0m \033[1;31mExit 
+        1. Insert Order
+        2. Search Order
+        3. Update Order
+        4. Delete Order
+        5. Generate Report
+        6. Exit
 
-\033[1;37m--------------------------------------------------
-""")
+--------------------------------------------------
+    """)
 
     def print_header(self, choice, section_name):
         print(f"\nCurrent choice: {section_name} ({choice})")
