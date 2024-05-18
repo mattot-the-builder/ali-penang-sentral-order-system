@@ -104,3 +104,10 @@ class Database:
             WHERE strftime('%m', created_at) = strftime('%m', 'now')
         """)
         return self.cursor.fetchall()
+
+    def get_unpaid_orders(self):
+        self.cursor.execute("""
+            SELECT total_amount FROM orders
+            WHERE payment_status = 'UNPAID'
+        """)
+        return self.cursor.fetchall()

@@ -1,0 +1,14 @@
+
+--------------------------------------------------
+
+        PENANG SENTRAL RESTAURANT
+        Today Sales Report
+
+        Date : 18 May 2024
+        Generated at : 06.01 pm
+
+        Total Orders: 3
+        Amount: RM265.25
+
+--------------------------------------------------
+        

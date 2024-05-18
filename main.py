@@ -33,7 +33,7 @@ class App:
 
     def start(self):
         self.print_main_menu()
-        self.choice = input("Enter your choice: ")
+        self.choice = input("Enter your choice (1-6): ")
 
         while (self.choice != "6"):
 
@@ -52,7 +52,7 @@ class App:
 
             self.print_main_menu()
 
-            self.choice = input("Enter your choice: ")
+            self.choice = input("Enter your choice (1-6): ")
         else:
             print("Exiting...")
             sys.exit()
