@@ -1,113 +1,10 @@
-import sqlite3
-import sys
 from datetime import datetime
+import sys
+import utils
 
-
-class Order:
-    id = None
-    order_type = None
-    card_number = None
-    order_items = None
-    total_amount = None
-    payment_status = None
-    created_at = None
-    updated_at = None
-
-    def __init__(self, order_type, card_number, order_items, total_amount, payment_status):
-        self.order_type = order_type
-        self.card_number = card_number
-        self.order_items = order_items
-        self.total_amount = total_amount
-        self.payment_status = payment_status
-
-    def print_order(self):
-        print(f"""
-        Order ID: {self.id}
-        Order type: {self.order_type}
-        Card number: {self.card_number}
-        Order items: {self.order_items}
-        Total amount: RM{round(self.total_amount / 100, 2)}
-        Payment status: {self.payment_status}
-        Created at: {datetime.fromisoformat(self.created_at).strftime("%-I.%M%p %d-%-m-%Y").lower()}
-        Updated at: {datetime.fromisoformat(self.updated_at).strftime("%-I.%M%p %d-%-m-%Y").lower()}
-        """)
-
-
-class Database:
-    connection = None
-    cursor = None
-
-    def __init__(self):
-        self.connect()
-        self.create_table()
-
-    def connect(self):
-        self.connection = sqlite3.connect("penang_sentral.sqlite")
-        self.cursor = self.connection.cursor()
-        # TODO: delete
-        print("connected to database")
-
-    def create_table(self):
-        self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS orders (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                order_type TEXT CHECK(order_type IN ('TAKEOUT', 'DELIVERY')),
-                card_number INTEGER,
-                order_items TEXT,
-                total_amount INTEGER,
-                payment_status TEXT CHECK(payment_status IN ('PAID', 'UNPAID')),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-        # TODO: delete
-        print("table created")
-
-    def insert_order(self, order):
-        current_timestamp = datetime.now().isoformat()
-        self.cursor.execute("""
-            INSERT INTO orders (order_type, card_number, order_items, total_amount, payment_status, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (order.order_type, order.card_number, order.order_items, order.total_amount, order.payment_status, current_timestamp, current_timestamp))
-        self.connection.commit()
-        # TODO: delete
-        print("order inserted")
-
-    def search_order(self, card_number):
-        self.cursor.execute("""
-            SELECT * FROM orders
-            WHERE card_number = ?
-        """, (card_number,))
-        return self.cursor.fetchall()
-
-    def update_order(self, order_id, order):
-        current_timestamp = datetime.now().isoformat()
-        self.cursor.execute("""
-            UPDATE orders
-            SET order_items = ?, total_amount = ?, payment_status = ?, updated_at = ?
-            WHERE id = ?
-        """, (order.order_items, order.total_amount, order.payment_status, current_timestamp, order_id))
-        self.connection.commit()
-        # TODO: delete
-        print("order updated")
-
-    def delete_order(self, order_id):
-        self.cursor.execute("""
-            DELETE FROM orders
-            WHERE id = ?
-        """, (order_id,))
-        self.connection.commit()
-        # TODO: delete
-        print("order deleted")
-
-    def get_latest_order_id(self, card_number):
-        self.cursor.execute("""
-            SELECT id FROM orders
-            WHERE card_number = ?
-            ORDER BY created_at DESC
-            LIMIT 1
-        """, (card_number,))
-        return self.cursor.fetchone()[0]
+from storage import Database
+from order import Order
+from report import Report
 
 
 class App:
@@ -129,6 +26,10 @@ class App:
         6. Exit
 
         """)
+
+    def print_header(self, choice, section_name):
+        print(f"\nCurrent choice: {section_name} ({choice})")
+        print("Enter new order details\n")
 
     def start(self):
         self.print_main_menu()
@@ -157,15 +58,22 @@ class App:
             sys.exit()
 
     def insert_order(self):
-        print("\nCurrent choice: INSERT ORDER (2)")
-        print("Enter order details\n")
-        order_type = input("Enter order type (TAKEOUT/DELIVERY): ").upper()
+        self.print_header(1, "INSERT ORDER")
+        order_type_input = input("Takeaway ? (Y/N): ").upper()
+
+        order_type = "DINE-IN"
+
+        if order_type_input == "Y":
+            order_type = "TAKEAWAY"
+        elif order_type_input == "N":
+            order_type = "DINE-IN"
+
         card_number = int(input("Enter card number: "))
         order_items = input("Enter order items: ")
         total_amount_in_RM = float(input("Enter total amount : RM"))
         payment_status = input("Enter payment status (PAID/UNPAID): ").upper()
 
-        total_amount = total_amount_in_RM * 100
+        total_amount = utils.to_cents(total_amount_in_RM)
 
         order = Order(order_type, card_number, order_items,
                       total_amount, payment_status)
@@ -173,6 +81,7 @@ class App:
         print("Order inserted successfully!")
 
     def search_order(self):
+        self.print_header(2, "SEARCH ORDER")
         card_number = int(input("Enter card number: "))
         search_result = self.db.search_order(card_number)
 
@@ -187,16 +96,22 @@ class App:
         return search_result
 
     def update_order(self):
-        print("\nCurrent choice: INSERT ORDER (2)")
-        print("Enter new order details\n")
+        self.print_header(3, "UPDATE ORDER")
         card_number = int(input("Enter card number: "))
-        order_type = input("Enter new order type (TAKEOUT/DELIVERY): ").upper()
+
+        order_type = "DINE-IN"
+
+        if order_type_input == "Y":
+            order_type = "TAKEAWAY"
+        elif order_type_input == "N":
+            order_type = "DINE-IN"
+
         order_items = input("Enter new order items: ")
         total_amount_in_RM = float(input("Enter new total amount: RM"))
         payment_status = input(
             "Enter new payment status (PAID/UNPAID): ").upper()
 
-        total_amount = total_amount_in_RM * 100
+        total_amount = utils.to_cents(total_amount_in_RM)
 
         order = Order(order_type, card_number, order_items,
                       total_amount, payment_status)
@@ -205,13 +120,47 @@ class App:
         print("Order updated successfully!")
 
     def delete_order(self):
+        self.print_header(4, "DELETE ORDER")
         card_number = int(input("Enter card number: "))
         self.db.delete_order(self.db.get_latest_order_id(card_number))
         # TODO: delete
         print("Order deleted successfully!")
 
+    def print_report(self, orders):
+        total_amount = 0
+        total_orders = len(orders)
+
+        for order in orders:
+            total_amount += order[0]
+
+        print(f"""
+        Total orders: {total_orders}
+        Total amount: RM{utils.to_RM(total_amount)}
+        """)
+
     def generate_report(self):
-        pass
+        self.print_header(5, "VIEW REPORT")
+
+        today_order = self.db.get_all_order_today()
+        today_amount = utils.to_RM(sum([order[0] for order in today_order]))
+
+        this_week_order = self.db.get_all_order_this_week()
+        this_week_amount = utils.to_RM(
+            sum([order[0] for order in this_week_order]))
+
+        this_month_order = self.db.get_all_order_this_month()
+        this_month_amount = utils.to_RM(
+            sum([order[0] for order in this_month_order]))
+
+        total_order = self.db.get_all_orders()
+
+        today_date = datetime.now().isoformat()
+
+        report = Report(today_date)
+        report.generate_report_today(today_order, today_amount)
+
+    # TODO: delete
+    print("Report generated successfully!")
 
 
 def main():
