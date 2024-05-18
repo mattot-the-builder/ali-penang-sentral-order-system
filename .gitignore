@@ -1,5 +1,5 @@
 .DS_Store
-penang_sentral.db
+penang_sentral.sqlite
 
 __pycache__/
 # reports/*

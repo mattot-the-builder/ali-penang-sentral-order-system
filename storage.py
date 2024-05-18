@@ -13,7 +13,6 @@ class Database:
     def connect(self):
         self.connection = sqlite3.connect("penang_sentral.sqlite")
         self.cursor = self.connection.cursor()
-        # TODO: delete
         print("connected to database")
 
     def create_table(self):
@@ -29,7 +28,6 @@ class Database:
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        # TODO: delete
         print("table created")
 
     def insert_order(self, order):
@@ -39,7 +37,6 @@ class Database:
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (order.order_type, order.card_number, order.order_items, order.total_amount, order.payment_status, current_timestamp, current_timestamp))
         self.connection.commit()
-        # TODO: delete
         print("order inserted")
 
     def search_order(self, card_number):
@@ -57,7 +54,6 @@ class Database:
             WHERE id = ?
         """, (order.order_items, order.total_amount, order.payment_status, current_timestamp, order_id))
         self.connection.commit()
-        # TODO: delete
         print("order updated")
 
     def delete_order(self, order_id):
@@ -66,7 +62,6 @@ class Database:
             WHERE id = ?
         """, (order_id,))
         self.connection.commit()
-        # TODO: delete
         print("order deleted")
 
     def get_latest_order_id(self, card_number):

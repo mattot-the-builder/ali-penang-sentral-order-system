@@ -49,7 +49,10 @@ class Report:
         export_status = input("Export to text file ? (Y/N): ").upper()
         if export_status == "Y":
             self.export_to_file(self.file_path, formatted_result)
+            print("Report generated successfully!")
+        elif export_status == "N":
+            pass
 
     def export_to_file(self, file_path, data):
         with open(file_path, "x") as file:
-            file.write(data)
+            file.write(data + "\n")

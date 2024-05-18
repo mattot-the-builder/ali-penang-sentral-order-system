@@ -16,16 +16,19 @@ class App:
 
     def print_main_menu(self):
         print("""
-        Penang Sentral Ordering System
+-\033[1;37m-------------------------------------------------
+        \033[32mPenang Sentral Ordering System\033[0m
+--------------------------------------------------
 
-        1. Insert Order
-        2. Search Order
-        3. Update Order
-        4. Delete Order
-        5. Generate Report
-        6. Exit
+        \033[1;36m1.\033[0m \033[1;36mInsert Order
+        \033[1;35m2.\033[0m \033[1;35mSearch Order
+        \033[1;33m3.\033[0m \033[1;33mUpdate Order
+        \033[1;34m4.\033[0m \033[1;34mDelete Order
+        \033[1;37m5.\033[0m \033[1;37mGenerate Report
+        \033[1;31m6.\033[0m \033[1;31mExit 
 
-        """)
+\033[1;37m--------------------------------------------------
+""")
 
     def print_header(self, choice, section_name):
         print(f"\nCurrent choice: {section_name} ({choice})")
@@ -67,6 +70,8 @@ class App:
             order_type = "TAKEAWAY"
         elif order_type_input == "N":
             order_type = "DINE-IN"
+        else:
+            print("Invalid choice. Please try again.")
 
         card_number = int(input("Enter card number: "))
         order_items = input("Enter order items: ")
@@ -85,7 +90,6 @@ class App:
         card_number = int(input("Enter card number: "))
         search_result = self.db.search_order(card_number)
 
-        # TODO: call print_order()
         for result in search_result:
             order = Order(result[1], result[2],
                           result[3], result[4], result[5])
@@ -100,6 +104,8 @@ class App:
         card_number = int(input("Enter card number: "))
 
         order_type = "DINE-IN"
+
+        order_type_input = input("Takeaway ? (Y/N): ").upper()
 
         if order_type_input == "Y":
             order_type = "TAKEAWAY"
@@ -116,14 +122,12 @@ class App:
         order = Order(order_type, card_number, order_items,
                       total_amount, payment_status)
         self.db.update_order(self.db.get_latest_order_id(card_number), order)
-        # TODO: delete
         print("Order updated successfully!")
 
     def delete_order(self):
         self.print_header(4, "DELETE ORDER")
         card_number = int(input("Enter card number: "))
         self.db.delete_order(self.db.get_latest_order_id(card_number))
-        # TODO: delete
         print("Order deleted successfully!")
 
     def print_report(self, orders):
@@ -158,9 +162,6 @@ class App:
 
         report = Report(today_date)
         report.generate_report_today(today_order, today_amount)
-
-    # TODO: delete
-    print("Report generated successfully!")
 
 
 def main():

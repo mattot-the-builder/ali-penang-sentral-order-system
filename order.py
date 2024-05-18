@@ -27,6 +27,6 @@ class Order:
         Order items: {self.order_items}
         Total amount: RM{utils.to_RM(self.total_amount)}
         Payment status: {self.payment_status}
-        Created at: {datetime.fromisoformat(self.created_at).strftime("%-I.%M%p %d-%-m-%Y").lower()}
-        Updated at: {datetime.fromisoformat(self.updated_at).strftime("%-I.%M%p %d-%-m-%Y").lower()}
+        Created at: {datetime.fromisoformat(self.created_at).strftime("%-I.%M%p %-d %B %Y")}
+        Updated at: {datetime.fromisoformat(self.updated_at).strftime("%-I.%M%p %-d %B %Y")}
         """)
