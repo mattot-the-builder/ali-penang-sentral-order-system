@@ -5,6 +5,7 @@ from datetime import datetime
 
 class Order:
     id = None
+    order_type = None
     card_number = None
     order_items = None
     total_amount = None
@@ -12,19 +13,24 @@ class Order:
     created_at = None
     updated_at = None
 
-    def __init__(self, card_number, order_items, total_amount, payment_status):
+    def __init__(self, order_type, card_number, order_items, total_amount, payment_status):
+        self.order_type = order_type
         self.card_number = card_number
         self.order_items = order_items
         self.total_amount = total_amount
         self.payment_status = payment_status
 
     def print_order(self):
-        print(f"Card number: {self.card_number}")
-        print(f"Order items: {self.order_items}")
-        print(f"Total amount: {self.total_amount}")
-        print(f"Payment status: {self.payment_status}")
-        print(f"Created at: {self.created_at}")
-        print(f"Updated at: {self.updated_at}")
+        print(f"""
+        Order ID: {self.id}
+        Order type: {self.order_type}
+        Card number: {self.card_number}
+        Order items: {self.order_items}
+        Total amount: RM{round(self.total_amount / 100, 2)}
+        Payment status: {self.payment_status}
+        Created at: {datetime.fromisoformat(self.created_at).strftime("%-I.%M%p %d-%-m-%Y").lower()}
+        Updated at: {datetime.fromisoformat(self.updated_at).strftime("%-I.%M%p %d-%-m-%Y").lower()}
+        """)
 
 
 class Database:
@@ -45,6 +51,7 @@ class Database:
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS orders (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                order_type TEXT CHECK(order_type IN ('TAKEOUT', 'DELIVERY')),
                 card_number INTEGER,
                 order_items TEXT,
                 total_amount INTEGER,
@@ -59,9 +66,9 @@ class Database:
     def insert_order(self, order):
         current_timestamp = datetime.now().isoformat()
         self.cursor.execute("""
-            INSERT INTO orders (card_number, order_items, total_amount, payment_status, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (order.card_number, order.order_items, order.total_amount, order.payment_status, current_timestamp, current_timestamp))
+            INSERT INTO orders (order_type, card_number, order_items, total_amount, payment_status, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (order.order_type, order.card_number, order.order_items, order.total_amount, order.payment_status, current_timestamp, current_timestamp))
         self.connection.commit()
         # TODO: delete
         print("order inserted")
@@ -150,6 +157,9 @@ class App:
             sys.exit()
 
     def insert_order(self):
+        print("\nCurrent choice: INSERT ORDER (2)")
+        print("Enter order details\n")
+        order_type = input("Enter order type (TAKEOUT/DELIVERY): ").upper()
         card_number = int(input("Enter card number: "))
         order_items = input("Enter order items: ")
         total_amount_in_RM = float(input("Enter total amount : RM"))
@@ -157,7 +167,8 @@ class App:
 
         total_amount = total_amount_in_RM * 100
 
-        order = Order(card_number, order_items, total_amount, payment_status)
+        order = Order(order_type, card_number, order_items,
+                      total_amount, payment_status)
         self.db.insert_order(order)
         print("Order inserted successfully!")
 
@@ -166,10 +177,20 @@ class App:
         search_result = self.db.search_order(card_number)
 
         # TODO: call print_order()
+        for result in search_result:
+            order = Order(result[1], result[2],
+                          result[3], result[4], result[5])
+            order.id = result[0]
+            order.created_at = result[6]
+            order.updated_at = result[7]
+            order.print_order()
         return search_result
 
     def update_order(self):
+        print("\nCurrent choice: INSERT ORDER (2)")
+        print("Enter new order details\n")
         card_number = int(input("Enter card number: "))
+        order_type = input("Enter new order type (TAKEOUT/DELIVERY): ").upper()
         order_items = input("Enter new order items: ")
         total_amount_in_RM = float(input("Enter new total amount: RM"))
         payment_status = input(
@@ -177,7 +198,8 @@ class App:
 
         total_amount = total_amount_in_RM * 100
 
-        order = Order(card_number, order_items, total_amount, payment_status)
+        order = Order(order_type, card_number, order_items,
+                      total_amount, payment_status)
         self.db.update_order(self.db.get_latest_order_id(card_number), order)
         # TODO: delete
         print("Order updated successfully!")
